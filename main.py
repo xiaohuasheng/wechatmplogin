@@ -1,3 +1,5 @@
+import json
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
@@ -5,16 +7,20 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import requests
 
+from qrcode import save_qrcode
+
+
 # 设置 ChromeDriver 的路径
 # https://chromedriver.storage.googleapis.com/index.html?path=114.0.5735.90/
-chromedriver_path = '/Users/xhs/Downloads/chromedriver_mac_arm64/chromedriver'
+# https://googlechromelabs.github.io/chrome-for-testing/
+chromedriver_path = '/Users/xhs/Downloads/chromedriver-mac-arm64/chromedriver'
 
 # 配置 ChromeDriver 选项
 chrome_options = Options()
 chrome_options.add_argument('--headless')  # 在无界面模式下运行
 chrome_options.add_argument('--no-sandbox')  # 禁用沙盒模式
 chrome_options.add_argument('--disable-infobars')  # 禁用"Chrome正在受到自动测试软件的控制"提示
-chrome_options.add_experimental_option('excludeSwitches', ['enable-automation']) # 避免Chrome被识别为自动化测试工具而无法加载页面
+chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])  # 避免Chrome被识别为自动化测试工具而无法加载页面
 # 创建 ChromeDriver 实例
 driver = webdriver.Chrome(chromedriver_path, options=chrome_options)
 
@@ -24,45 +30,35 @@ driver.get('https://mp.weixin.qq.com/')
 # 打开网页
 
 wait = WebDriverWait(driver, 20)
-driver.get_screenshot_as_file("login.png") # 截取当前窗口，并指定截图图片的保存位置
+driver.get_screenshot_as_file("login.png")  # 截取当前窗口，并指定截图图片的保存位置
 
 # 等待二维码图片元素出现
-qrcode_img = WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.XPATH, "//img[@class='login__type__container__scan__qrcode']")))
+qrcode_img = WebDriverWait(driver, 15).until(
+    EC.presence_of_element_located((By.XPATH, "//img[@class='login__type__container__scan__qrcode']")))
 # 打印二维码地址
 qrcode_url = qrcode_img.get_attribute('src')
-print("qrcode_url:"+qrcode_url)
-
+print("qrcode_url:" + qrcode_url)
 cookies = driver.get_cookies()
 response = requests.get(qrcode_url, cookies={c['name']: c['value'] for c in cookies})
 # print(response.text)
 # response = requests.get(qrcode_url)
 if response.status_code == 200:
+    # 把二维码发到服务端
+    save_success = save_qrcode()
+    if not save_success:
+        print("上传二维码失败")
+        exit(1)
     with open('qrcode.png', 'wb') as file:
         file.write(response.content)
         print("二维码已保存为 qrcode.png")
 else:
     print("无法获取二维码")
 
-# image = Image.open(io.BytesIO(response.content))
-# 调整图像大小以适应终端输出
-# terminal_width, terminal_height = 80, 24
-# image = image.resize((terminal_width, terminal_height))
-# image.show()
-# decoded_data = decode(image)
-
-# qrcode_text = decoded_data[0].data.decode('ascii')
-# print(qrcode_text)
-
-# 将二维码图片转换为 ASCII 码表示
-# ascii_qrcode = qrcode.make(response.content).get_ascii()
-
-# 输出到终端
-# print(ascii_qrcode)
-
 # 设置等待时间为20秒
 waitLogin = WebDriverWait(driver, 20)
 # driver.get_screenshot_as_file("/Users/xhs/go_workspace/wechatmplogin/main.png") # 截取当前窗口，并指定截图图片的保存位置
-element1 = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@class='weui-desktop-account__info']")))
+element1 = WebDriverWait(driver, 20).until(
+    EC.presence_of_element_located((By.XPATH, "//*[@class='weui-desktop-account__info']")))
 
 # 获取当前页面的 URL
 current_url = driver.current_url
@@ -128,6 +124,10 @@ data = {
 }
 
 print(data)
-# response = requests.post(url, json=data, headers=headers)
-# print(response.text)
+response = requests.post(url, json=data, headers=headers)
+print(response.text)
 driver.quit()
+
+# 保存到 mp_auth.json
+with open('mp_auth.json', 'w') as f:
+    f.write(json.dumps(data))
