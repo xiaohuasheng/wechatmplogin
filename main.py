@@ -43,14 +43,14 @@ response = requests.get(qrcode_url, cookies={c['name']: c['value'] for c in cook
 # print(response.text)
 # response = requests.get(qrcode_url)
 if response.status_code == 200:
+    with open('qrcode.png', 'wb') as file:
+        file.write(response.content)
+        print("二维码已保存为 qrcode.png")
     # 把二维码发到服务端
     save_success = save_qrcode()
     if not save_success:
         print("上传二维码失败")
         exit(1)
-    with open('qrcode.png', 'wb') as file:
-        file.write(response.content)
-        print("二维码已保存为 qrcode.png")
 else:
     print("无法获取二维码")
 
