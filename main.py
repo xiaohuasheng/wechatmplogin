@@ -30,7 +30,7 @@ driver.get('https://mp.weixin.qq.com/')
 # 打开网页
 
 wait = WebDriverWait(driver, 20)
-driver.get_screenshot_as_file("login.png")  # 截取当前窗口，并指定截图图片的保存位置
+driver.get_screenshot_as_file("/tmp/login.png")  # 截取当前窗口，并指定截图图片的保存位置
 
 # 等待二维码图片元素出现
 qrcode_img = WebDriverWait(driver, 15).until(
@@ -58,7 +58,7 @@ else:
 waitLogin = WebDriverWait(driver, 20)
 # driver.get_screenshot_as_file("/Users/xhs/go_workspace/wechatmplogin/main.png") # 截取当前窗口，并指定截图图片的保存位置
 element1 = WebDriverWait(driver, 20).until(
-    EC.presence_of_element_located((By.XPATH, "//*[@class='weui-desktop-account__info']")))
+    EC.presence_of_element_located((By.XPATH, "//*[@class='weui-desktop_name']")))
 
 # 获取当前页面的 URL
 current_url = driver.current_url
