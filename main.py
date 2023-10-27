@@ -6,6 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import requests
+from selenium.webdriver.chrome.service import Service
 
 from qrcode import save_qrcode
 
@@ -13,7 +14,7 @@ from qrcode import save_qrcode
 # 设置 ChromeDriver 的路径
 # https://chromedriver.storage.googleapis.com/index.html?path=114.0.5735.90/
 # https://googlechromelabs.github.io/chrome-for-testing/
-# chromedriver_path = '/Users/xhs/Downloads/chromedriver-mac-arm64/chromedriver'
+chromedriver_path = '/Users/xhs/Downloads/chromedriver-mac-arm64/chromedriver'
 
 # 配置 ChromeDriver 选项
 chrome_options = Options()
@@ -22,7 +23,9 @@ chrome_options.add_argument('--no-sandbox')  # 禁用沙盒模式
 chrome_options.add_argument('--disable-infobars')  # 禁用"Chrome正在受到自动测试软件的控制"提示
 chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])  # 避免Chrome被识别为自动化测试工具而无法加载页面
 # 创建 ChromeDriver 实例
-driver = webdriver.Chrome(options=chrome_options)
+s = Service(chromedriver_path)
+driver = webdriver.Chrome(service=s, options=chrome_options)
+
 
 driver.set_window_size(1910, 985)
 
